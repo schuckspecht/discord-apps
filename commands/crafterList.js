@@ -1,12 +1,13 @@
 const mysql = require("mysql");
 const { EmbedBuilder } = require("discord.js");
+require("dotenv").config();
 
 // Connection configuration
 const dbConfig = {
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "powerUp",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
 };
 
 module.exports = {
