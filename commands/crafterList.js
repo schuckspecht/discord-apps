@@ -1,4 +1,4 @@
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const { EmbedBuilder } = require("discord.js");
 require("dotenv").config();
 

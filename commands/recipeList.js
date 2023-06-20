@@ -1,4 +1,4 @@
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const { ActionRowBuilder, StringSelectMenuBuilder } = require("discord.js");
 // Connection configuration
 const dbConfig = {
