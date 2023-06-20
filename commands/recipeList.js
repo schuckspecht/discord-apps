@@ -3,7 +3,7 @@ const { ActionRowBuilder, StringSelectMenuBuilder } = require("discord.js");
 // Connection configuration
 const dbConfig = {
   host: process.env.DB_HOST,
-  user: process.env.DB_USER,
+  user: "root",
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
 };
