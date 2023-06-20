@@ -15,8 +15,46 @@ client.on("unhandledRejection", (error) => {
   console.error("Unhandled promise rejection:", error);
 });
 
+this.aProfessions = [
+  {
+    name: "Blacksmithing",
+    value: "bs",
+  },
+  {
+    name: "Leatherworking",
+    value: "lw",
+  },
+  {
+    name: "Tailoring",
+    value: "tr",
+  },
+  {
+    name: "Jewelcrafting - Red",
+    value: "jc-red",
+  },
+  {
+    name: "Jewelcrafting - Blue",
+    value: "jc-blue",
+  },
+  {
+    name: "Jewelcrafting - Yellow",
+    value: "jc-yellow",
+  },
+  {
+    name: "Jewelcrafting - Orange",
+    value: "jc-orange",
+  },
+  {
+    name: "Jewelcrafting - Purple",
+    value: "jc-purple",
+  },
+  {
+    name: "Jewelcrafting - Green",
+    value: "jc-green",
+  },
+];
+
 client.on("interactionCreate", async (interaction) => {
-  console.log(interaction.member.user.username);
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "craftersearch") {
       const recipeProfessionOption = interaction.options.getString("recipe_profession");
@@ -45,10 +83,29 @@ client.on("interactionCreate", async (interaction) => {
 
     if (interaction.commandName === "crafterregister") {
       if (interaction.member.roles.cache.has(process.env.ROLE_ID)) {
-        const iRecipe = interaction.options.get("recipe_name").value;
-        const sCrafter = interaction.options.get("crafting_character").value;
+        const recipeProfessionOption = interaction.options.getString("recipe_profession");
+        this.crafterName = interaction.options.getString("crafting_character");
 
-        await crafterList.addCrafter(iRecipe, sCrafter, interaction);
+        if (recipeProfessionOption.includes("jc")) {
+          const aData = await recipeList.getJcRecipesByColor(recipeProfessionOption.split("-")[1], interaction);
+          const response = {
+            content: "Please select a recipe:",
+            ephemeral: true,
+            components: [new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId("recipeSelectCrafter").setPlaceholder("Select a crafting recipe").addOptions(aData))],
+          };
+
+          await interaction.reply(response);
+        } else {
+          const aData = await recipeList.getProfessionRecipes(recipeProfessionOption, interaction);
+
+          const response = {
+            content: "Please select a recipe:",
+            ephemeral: true,
+            components: [new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId("recipeSelectCrafter").setPlaceholder("Select a crafting recipe").addOptions(aData))],
+          };
+
+          await interaction.reply(response);
+        }
       } else {
         const response = {
           content: "You do not have the required role to use this command.",
@@ -82,6 +139,10 @@ client.on("interactionCreate", async (interaction) => {
       await crafterList.getCrafters(interaction.values[0], interaction);
     }
 
+    if (interaction.customId === "recipeSelectCrafter") {
+      await crafterList.addCrafter(interaction.values[0], this.crafterName, interaction);
+    }
+
     if (interaction.customId === "jewelTypeSelect") {
       const aData = await recipeList.getJcRecipesByColor(interaction.values[0], interaction);
 
@@ -110,68 +171,12 @@ recipeList.getProfessionRecipes().then((aData) => {
       name: "craftersearch",
       description: "Search for a crafter",
       options: [
-        // {
-        //   name: "recipe_name",
-        //   description: "recipe name",
-        //   type: 4,
-        //   required: true,
-        //   choices: this.aData,
-        // },
         {
           name: "recipe_profession",
           description: "Profession of the recipe",
           type: 3,
           required: true,
-          choices: [
-            {
-              name: "Alchemy",
-              value: "ac",
-            },
-            {
-              name: "Blacksmithing",
-              value: "bs",
-            },
-            {
-              name: "Leatherworking",
-              value: "lw",
-            },
-            {
-              name: "Tailoring",
-              value: "tr",
-            },
-            {
-              name: "Engineering",
-              value: "en",
-            },
-            {
-              name: "Jewelcrafting - Red",
-              value: "jc-red",
-            },
-            {
-              name: "Jewelcrafting - Blue",
-              value: "jc-blue",
-            },
-            {
-              name: "Jewelcrafting - Yellow",
-              value: "jc-yellow",
-            },
-            {
-              name: "Jewelcrafting - Orange",
-              value: "jc-orange",
-            },
-            {
-              name: "Jewelcrafting - Purple",
-              value: "jc-purple",
-            },
-            {
-              name: "Jewelcrafting - Green",
-              value: "jc-green",
-            },
-            {
-              name: "Enchanting",
-              value: "de",
-            },
-          ],
+          choices: this.aProfessions,
         },
       ],
     },
@@ -180,11 +185,11 @@ recipeList.getProfessionRecipes().then((aData) => {
       description: "Register yourself as a crafter",
       options: [
         {
-          name: "recipe_name",
-          description: "Name of the recipe you are able to craft",
-          type: 4,
+          name: "recipe_profession",
+          description: "Profession of the recipe",
+          type: 3,
           required: true,
-          choices: this.aData,
+          choices: this.aProfessions,
         },
         {
           name: "crafting_character",

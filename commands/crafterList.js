@@ -78,28 +78,40 @@ module.exports = {
 
         console.log("Connected to the database");
 
-        // Insert into the crafting_characters table
-        const query = "INSERT INTO crafting_characters (crafting_recipe_ID, crafting_character) VALUES (?, ?)";
-        connection.query(query, [craftingRecipeID, craftingCharacter], (error, results) => {
+        // Retrieve the item name from crafting_recipes table
+        const getItemQuery = "SELECT recipe_name FROM crafting_recipes WHERE recipe_ID = ?";
+        connection.query(getItemQuery, [craftingRecipeID], (error, itemResult) => {
           if (error) {
-            console.error("Failed to insert into the crafting_characters table:", error);
+            console.error("Failed to retrieve item name from crafting_recipes table:", error);
             reject(error);
             return;
           }
 
-          connection.end((error) => {
+          const itemName = itemResult[0].recipe_name;
+
+          // Insert into the crafting_characters table
+          const insertQuery = "INSERT INTO crafting_characters (crafting_recipe_ID, crafting_character) VALUES (?, ?)";
+          connection.query(insertQuery, [craftingRecipeID, craftingCharacter], (error, results) => {
             if (error) {
-              console.error("Failed to close the database connection:", error);
-            } else {
-              console.log("Database connection closed");
+              console.error("Failed to insert into the crafting_characters table:", error);
+              reject(error);
+              return;
             }
+
+            connection.end((error) => {
+              if (error) {
+                console.error("Failed to close the database connection:", error);
+              } else {
+                console.log("Database connection closed");
+              }
+            });
+
+            // Send success message to the interaction
+            const successMessage = `Crafter "${craftingCharacter}" has been successfully added for item "${itemName}".`;
+            interaction.reply({ content: successMessage, ephemeral: true });
+
+            resolve(results);
           });
-
-          // Send success message to the interaction
-          const successMessage = `Crafter "${craftingCharacter}" has been successfully added for recipe ID ${craftingRecipeID}.`;
-          interaction.reply({ embeds: [successMessage], ephemeral: true });
-
-          resolve(results);
         });
       });
     });
