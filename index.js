@@ -56,7 +56,7 @@ this.aProfessions = [
 
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isChatInputCommand()) {
-    if (interaction.commandName === "craftersearch") {
+    if (interaction.commandName === "who") {
       const recipeProfessionOption = interaction.options.getString("recipe_profession");
 
       if (recipeProfessionOption.includes("jc")) {
@@ -84,7 +84,7 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === "crafterregister") {
       if (interaction.member.roles.cache.has(process.env.ROLE_ID)) {
         const recipeProfessionOption = interaction.options.getString("recipe_profession");
-        this.crafterName = interaction.options.getString("crafting_character");
+        crafterName = interaction.options.getString("crafting_character");
 
         if (recipeProfessionOption.includes("jc")) {
           const aData = await recipeList.getJcRecipesByColor(recipeProfessionOption.split("-")[1], interaction);
@@ -140,7 +140,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.customId === "recipeSelectCrafter") {
-      await crafterList.addCrafter(interaction.values[0], this.crafterName, interaction);
+      await crafterList.addCrafter(interaction.values[0], crafterName, interaction);
     }
 
     if (interaction.customId === "jewelTypeSelect") {
@@ -168,7 +168,7 @@ recipeList.getProfessionRecipes().then((aData) => {
   this.aData = aData;
   const commands = [
     {
-      name: "craftersearch",
+      name: "who",
       description: "Search for a crafter",
       options: [
         {

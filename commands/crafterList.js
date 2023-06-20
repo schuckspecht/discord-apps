@@ -89,28 +89,46 @@ module.exports = {
 
           const itemName = itemResult[0].recipe_name;
 
-          // Insert into the crafting_characters table
-          const insertQuery = "INSERT INTO crafting_characters (crafting_recipe_ID, crafting_character) VALUES (?, ?)";
-          connection.query(insertQuery, [craftingRecipeID, craftingCharacter], (error, results) => {
+          // Check for duplicate entry
+          const duplicateQuery = "SELECT * FROM crafting_characters WHERE crafting_recipe_ID = ? AND crafting_character = ?";
+          connection.query(duplicateQuery, [craftingRecipeID, craftingCharacter], (error, duplicateResult) => {
             if (error) {
-              console.error("Failed to insert into the crafting_characters table:", error);
+              console.error("Failed to check for duplicate entry:", error);
               reject(error);
               return;
             }
 
-            connection.end((error) => {
+            if (duplicateResult.length > 0) {
+              // Duplicate entry found
+              const errorMessage = `Crafter "${craftingCharacter}" for item "${itemName}" is already registered.`;
+              interaction.reply({ content: errorMessage, ephemeral: true });
+              resolve();
+              return;
+            }
+
+            // Insert into the crafting_characters table
+            const insertQuery = "INSERT INTO crafting_characters (crafting_recipe_ID, crafting_character) VALUES (?, ?)";
+            connection.query(insertQuery, [craftingRecipeID, craftingCharacter], (error, results) => {
               if (error) {
-                console.error("Failed to close the database connection:", error);
-              } else {
-                console.log("Database connection closed");
+                console.error("Failed to insert into the crafting_characters table:", error);
+                reject(error);
+                return;
               }
+
+              connection.end((error) => {
+                if (error) {
+                  console.error("Failed to close the database connection:", error);
+                } else {
+                  console.log("Database connection closed");
+                }
+              });
+
+              // Send success message to the interaction
+              const successMessage = `Crafter "${craftingCharacter}" has been successfully added for item "${itemName}".`;
+              interaction.reply({ content: successMessage, ephemeral: true });
+
+              resolve(results);
             });
-
-            // Send success message to the interaction
-            const successMessage = `Crafter "${craftingCharacter}" has been successfully added for item "${itemName}".`;
-            interaction.reply({ content: successMessage, ephemeral: true });
-
-            resolve(results);
           });
         });
       });
