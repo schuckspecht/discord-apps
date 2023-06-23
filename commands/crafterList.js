@@ -25,40 +25,54 @@ module.exports = {
 
         console.log("Connected to the database");
 
-        // Query the crafting_characters table
-        const query = `
-          SELECT c.crafting_character, r.recipe_name
-          FROM crafting_characters c
-          INNER JOIN crafting_recipes r ON c.crafting_recipe_ID = r.recipe_ID
-          WHERE c.crafting_recipe_ID = ?
+        // Update the query_count table
+        const updateQuery = `
+          UPDATE query_count
+          SET query_counter = query_counter + 1
+          WHERE query_command = 'command_who'
         `;
-        connection.query(query, [sRecipe], (error, results) => {
+        connection.query(updateQuery, (error, updateResult) => {
           if (error) {
-            console.error("Failed to query the crafting_characters table:", error);
+            console.error("Failed to update the query_count table:", error);
             reject(error);
             return;
           }
 
-          connection.end((error) => {
+          // Query the crafting_characters table
+          const query = `
+            SELECT c.crafting_character, r.recipe_name
+            FROM crafting_characters c
+            INNER JOIN crafting_recipes r ON c.crafting_recipe_ID = r.recipe_ID
+            WHERE c.crafting_recipe_ID = ?
+          `;
+          connection.query(query, [sRecipe], (error, results) => {
             if (error) {
-              console.error("Failed to close the database connection:", error);
-            } else {
-              console.log("Database connection closed");
+              console.error("Failed to query the crafting_characters table:", error);
+              reject(error);
+              return;
             }
+
+            connection.end((error) => {
+              if (error) {
+                console.error("Failed to close the database connection:", error);
+              } else {
+                console.log("Database connection closed");
+              }
+            });
+
+            const crafters = results.map((crafter) => crafter.crafting_character).join(", ");
+            const recipeName = results.length > 0 ? results[0].recipe_name : "Unknown Recipe";
+
+            if (results.length == 0) {
+              var embed = new EmbedBuilder().setTitle("Crafters").setDescription(`No crafters found.`);
+            } else {
+              var embed = new EmbedBuilder().setTitle("Crafters").setDescription(`Crafters for recipe "${recipeName}": ${crafters}`);
+            }
+
+            // Send the message to the user
+            interaction.reply({ embeds: [embed], ephemeral: true });
+            resolve(results);
           });
-
-          const crafters = results.map((crafter) => crafter.crafting_character).join(", ");
-          const recipeName = results.length > 0 ? results[0].recipe_name : "Unknown Recipe";
-
-          if (results.length == 0) {
-            var embed = new EmbedBuilder().setTitle("Crafters").setDescription(`No crafters found.`);
-          } else {
-            var embed = new EmbedBuilder().setTitle("Crafters").setDescription(`Crafters for recipe "${recipeName}": ${crafters}`);
-          }
-
-          // Send the message to the user
-          interaction.reply({ embeds: [embed], ephemeral: true });
-          resolve(results);
         });
       });
     });
