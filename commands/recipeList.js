@@ -24,7 +24,7 @@ module.exports = {
         console.log("Connected to the database");
 
         // Query the crafting_recipes table
-        const query = `SELECT * FROM crafting_recipes WHERE recipe_profession = ?`;
+        const query = `SELECT * FROM crafting_recipes ORDER BY recipe_name ASC WHERE recipe_profession = ?`;
         connection.query(query, [sProfession], (error, results) => {
           if (error) {
             console.error("Failed to query the crafting_recipes table:", error);
@@ -70,7 +70,7 @@ module.exports = {
         console.log("Connected to the database");
 
         // Query the crafting_recipes table
-        const query = `SELECT * FROM crafting_recipes WHERE jc_color = ?`;
+        const query = `SELECT * FROM crafting_recipes ORDER BY recipe_name ASC WHERE jc_color = ?`;
         connection.query(query, [sColor], (error, results) => {
           if (error) {
             console.error("Failed to query the crafting_recipes table:", error);
