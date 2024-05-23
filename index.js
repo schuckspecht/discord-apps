@@ -52,6 +52,14 @@ this.aProfessions = [
     name: "Jewelcrafting - Green",
     value: "jc-green",
   },
+  {
+    name: "Jewelcrafting - Meta",
+    value: "jc-meta",
+  },
+  {
+    name: "Jewelcrafting - Misc",
+    value: "jc-misc",
+  },
 ];
 
 client.on("interactionCreate", async (interaction) => {
