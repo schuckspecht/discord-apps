@@ -61,21 +61,37 @@ client.on("interactionCreate", async (interaction) => {
 
       if (recipeProfessionOption.includes("jc")) {
         const aData = await recipeList.getJcRecipesByColor(recipeProfessionOption.split("-")[1], interaction);
-        const response = {
-          content: "Please select a recipe:",
-          ephemeral: true,
-          components: [new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId("recipeSelect").setPlaceholder("Select a crafting recipe").addOptions(aData))],
-        };
+        let response;
 
+        if(aData.length){
+          response = {
+            content: "Please select a recipe:",
+            ephemeral: true,
+            components: [new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId("recipeSelect").setPlaceholder("Select a crafting recipe").addOptions(aData))],
+          };
+        }else{
+          response = {
+            content: "No recipes found in the selected Category.",
+            ephemeral: true,
+          };
+        }
         await interaction.reply(response);
       } else {
         const aData = await recipeList.getProfessionRecipes(recipeProfessionOption, interaction);
+        let response;
 
-        const response = {
-          content: "Please select a recipe:",
-          ephemeral: true,
-          components: [new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId("recipeSelect").setPlaceholder("Select a crafting recipe").addOptions(aData))],
-        };
+        if(aData.length !== 0){
+          response = {
+            content: "Please select a recipe:",
+            ephemeral: true,
+            components: [new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId("recipeSelect").setPlaceholder("Select a crafting recipe").addOptions(aData))],
+          };
+        }else{
+          response = {
+            content: "No recipes found in the selected Category.",
+            ephemeral: true,
+          };
+        }
 
         await interaction.reply(response);
       }
